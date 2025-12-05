@@ -1,0 +1,57 @@
+# C/C++
+If:
+  PathMatch: [.*\.cc, .*\.cpp, .*\.cxx, .*\.hpp, .*\.inl, .*\.c, .*\.h, .*\.hh]
+
+Completion:
+  AllScopes: False
+
+Hover:
+  ShowAKA: True
+---
+# C++
+If:
+  PathMatch: [.*\.cc, .*\.h]
+
+CompileFlags:
+  Add: [--std=c++20, -Wall, -Wextra, -Wpedantic]
+
+Diagnostics:
+  ClangTidy:
+    Add:
+      - clang-analyzer-*
+      - clang-diagnostic-*
+      - cppcoreguidelines-*
+      - google-*
+      - modernize-*
+      - performance-*
+      - readability-*
+    Remove:
+      - cppcoreguidelines-pro-bounds-array-to-pointer-decay
+      - cppcoreguidelines-pro-bounds-pointer-arithmetic
+      - cppcoreguidelines-pro-type-static-cast-downcast
+      - modernize-use-bool-literals
+      - modernize-use-transparent-functors
+      - modernize-use-using
+      - readability-else-after-return
+      - readability-named-parameter
+      - readability-identifier-length
+    CheckOptions:
+      readability-identifier-naming.ClassCase: CamelCase
+      readability-identifier-naming.NamespaceCase: lower_case
+      readability-identifier-naming.PrivateMemberSuffix: _
+      readability-identifier-naming.StructCase: CamelCase
+      readability-identifier-naming.VariableCase: lower_case
+---
+# C++ source
+If:
+  PathMatch: [.*\.cc]
+
+CompileFlags:
+  Add: [-xc++]
+---
+# C++ header
+If:
+  PathMatch: [.*\.h]
+
+CompileFlags:
+  Add: [-xc++-header]

@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: MIT-0
+
+module(name = "drake_testing")
+
+# Add the Bazel rulesets we need.
+bazel_dep(name = "rules_cc", version = "0.2.14")
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+# Use the host system python.
+register_toolchains("@rules_python//python/runtime_env_toolchains:all")
+
+# Disable the exec tools toolchain.
+register_toolchains("//:python_no_exec_tools_toolchain")
+
+# Use the host system Eigen.
+local_eigen_repository = use_repo_rule("//:eigen.bzl", "local_eigen_repository")
+local_eigen_repository(name = "eigen")
+
+# Use a downloaded, pre-compiled build of Drake.
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "drake",
+    urls = [
+        # This URL refers to the most recent nightly build of Drake (which is
+        # helpful for our CI test coverage). Users will probably want to pin
+        # this to a specific release version, instead. To find those URLs,
+        # refer to https://github.com/RobotLocomotion/drake/releases.
+        "https://github.com/RobotLocomotion/drake/releases/download/v1.47.0/drake-1.47.0-noble.tar.gz"
+    ],
+    build_file = "drake.BUILD.bazel",
+    strip_prefix = "drake",
+)
+
+# Hedron's Compile Commands Extractor for Bazel
+# https://github.com/hedronvision/bazel-compile-commands-extractor
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+    commit = "abb61a688167623088f8768cc9264798df6a9d10",
+    # Replace the commit hash (above) with the latest (https://github.com/hedronvision/bazel-compile-commands-extractor/commits/main).
+    # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
+)

@@ -1,0 +1,15 @@
+{
+  "lsp": {
+    "clangd": {
+      "binary": {
+        "ignore_system_version": true,
+        "arguments": [
+          "--pretty",
+          "--background-index",
+          "--clang-tidy",
+          "--query-driver=/usr/bin/g++"
+        ]
+      }
+    }
+  }
+}

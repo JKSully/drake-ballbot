@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MIT-0
+
+/MODULE.bazel.lock
+/bazel-*
+/user.bazelrc
+compile_commands.json
+/external
+/.cache
