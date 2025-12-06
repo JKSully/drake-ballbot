@@ -60,19 +60,20 @@ Matrix2<T> BallbotPlant<T>::MassMatrix(
   BallbotState<T> const& state = this->get_state(context);
   T const mass_total = params.mass_a() + params.mass_k() + params.mass_w();
   T const radius_total = params.radius_k() + params.radius_w();
-  T const gam = params.l() * params.mass_a() + radius_total * params.mass_w();
+  T const gam =
+      (params.l() * params.mass_a()) + (radius_total * params.mass_w());
   T const u = this->get_tau(context);
 
   T const kw_squared = pow(params.radius_k() * params.radius_w(), 2);
 
-  T const m11 = mass_total * params.radius_k() * params.radius_k() +
-                params.theta_k() + kw_squared * params.theta_w();
-  T const m12 = -kw_squared * radius_total * params.theta_w() +
-                gam * params.radius_k() * cos(state.lean_angle());
+  T const m11 = (mass_total * params.radius_k() * params.radius_k()) +
+                params.theta_k() + (kw_squared * params.theta_w());
+  T const m12 = -(kw_squared * radius_total * params.theta_w()) +
+                (gam * params.radius_k() * cos(state.lean_angle()));
   T const& m21 = m12;
-  T const m22 = pow(radius_total / params.radius_w(), 2) * params.theta_w() +
-                params.mass_a() * params.l() * params.l() +
-                params.mass_w() * radius_total * radius_total;
+  T const m22 = (pow(radius_total / params.radius_w(), 2) * params.theta_w()) +
+                (params.mass_a() * params.l() * params.l()) +
+                (params.mass_w() * radius_total * radius_total);
 
   Matrix2<T> M;
   M << m11, m12, m21, m22;
@@ -86,7 +87,8 @@ Vector2<T> BallbotPlant<T>::Coriolis(const systems::Context<T>& context) const {
   BallbotState<T> const& state = this->get_state(context);
 
   T const radius_total = params.radius_k() + params.radius_w();
-  T const gam = params.l() * params.mass_a() + radius_total * params.mass_w();
+  T const gam =
+      (params.l() * params.mass_a()) + (radius_total * params.mass_w());
 
   Vector2<T> C = Vector2<T>::Zero();
 
@@ -103,7 +105,8 @@ Vector2<T> BallbotPlant<T>::Gravity(const systems::Context<T>& context) const {
   BallbotState<T> const& state = this->get_state(context);
 
   T const radius_total = params.radius_k() + params.radius_w();
-  T const gam = params.l() * params.mass_a() + radius_total * params.mass_w();
+  T const gam =
+      (params.l() * params.mass_a()) + (radius_total * params.mass_w());
 
   Vector2<T> G = Vector2<T>::Zero();
 
