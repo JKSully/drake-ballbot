@@ -5,6 +5,7 @@ cc_library(
     deps = [
         "@drake//:drake_shared_library",
         "//ballbot/plant:ballbot_plant",
+        "@fmt"
     ],
     visibility = ["//visibility:public"],
 )

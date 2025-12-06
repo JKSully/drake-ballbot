@@ -34,13 +34,19 @@ Diagnostics:
       - modernize-use-using
       - readability-else-after-return
       - readability-named-parameter
+      # Additional checks not in Drake
       - readability-identifier-length
+      - modernize-use-trailing-return-type
     CheckOptions:
       readability-identifier-naming.ClassCase: CamelCase
       readability-identifier-naming.NamespaceCase: lower_case
       readability-identifier-naming.PrivateMemberSuffix: _
       readability-identifier-naming.StructCase: CamelCase
       readability-identifier-naming.VariableCase: lower_case
+      # Additional checks not in Drake
+      readability-identifier-naming.StaticMemberCase: CamelCase
+      readability-identifier-naming.StaticConstantPrefix: k
+
 ---
 # C++ source
 If:

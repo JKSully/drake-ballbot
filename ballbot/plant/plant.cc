@@ -21,7 +21,7 @@ using std::cos;
 using std::pow;
 using std::sin;
 
-namespace drake {
+namespace drake::ballbot {
 template <typename T>
 BallbotPlant<T>::BallbotPlant()
     : systems::LeafSystem<T>(systems::SystemTypeTag<BallbotPlant>{}) {
@@ -148,6 +148,6 @@ void BallbotPlant<T>::DoCalcTimeDerivatives(
   derivatives->SetFromVector(qddot);
 }
 
-}  // namespace drake
+}  // namespace drake::ballbot
 DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
-    class drake::BallbotPlant);
+    class drake::ballbot::BallbotPlant);

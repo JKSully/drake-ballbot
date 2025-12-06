@@ -2,7 +2,7 @@
 
 #include "drake/common/never_destroyed.h"
 
-namespace drake {
+namespace drake::ballbot {
 const int BallbotInputIndicies::kNumCoordinates;
 const int BallbotInputIndicies::kTau;
 
@@ -12,4 +12,4 @@ const std::vector<std::string>& BallbotInputIndicies::GetCoordinateNames() {
   return coordinates.access();
 }
 
-}  // namespace drake
+}  // namespace drake::ballbot

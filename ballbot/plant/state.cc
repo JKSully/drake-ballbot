@@ -2,7 +2,7 @@
 
 #include "drake/common/never_destroyed.h"
 
-namespace drake {
+namespace drake::ballbot {
 const int BallbotStateIndicies::kNumCoordinates;
 const int BallbotStateIndicies::kBallAngle;
 const int BallbotStateIndicies::kBallVelocity;
@@ -15,4 +15,4 @@ const std::vector<std::string>& BallbotStateIndicies::GetCoordinateNames() {
                                "lean_velocity"});
   return coordinates.access();
 }
-}  // namespace drake
+}  // namespace drake::ballbot

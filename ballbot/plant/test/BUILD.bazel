@@ -1,0 +1,8 @@
+cc_test(
+    name = "traj_opt_test",
+    deps = [
+        "//ballbot/plant:ballbot_plant",
+        "@googletest//:gtest_main",
+    ],
+    srcs = ["traj_opt_test.cc"],
+)

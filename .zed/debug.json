@@ -1,7 +1,7 @@
 [
   {
     "label": "ballbot MPC",
-    "adapter": "GDB",
+    "adapter": "CodeLLDB",
     "request": "launch",
     "program": "./bazel-bin/ballbot/ballbot_mpc_main"
     // "build": "Bazel build (all)"

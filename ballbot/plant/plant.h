@@ -18,7 +18,7 @@
 #include "drake/systems/framework/output_port_base.h"
 #include "drake/systems/framework/vector_base.h"
 
-namespace drake {
+namespace drake::ballbot {
 template <typename T>
 class BallbotPlant final : public systems::LeafSystem<T> {
  public:
@@ -87,4 +87,4 @@ class BallbotPlant final : public systems::LeafSystem<T> {
       const systems::Context<T>& context,
       systems::ContinuousState<T>* derivatives) const override;
 };
-}  // namespace drake
+}  // namespace drake::ballbot

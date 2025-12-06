@@ -2,7 +2,6 @@
 #include <memory>
 
 #include <Eigen/Core>
-#define FMT_HEADER_ONLY
 #include <fmt/ostream.h>
 
 #include "ballbot/mpc/nlmpc.h"
@@ -18,7 +17,7 @@
 #include "drake/systems/primitives/vector_log.h"
 #include "drake/systems/primitives/vector_log_sink.h"
 
-namespace drake {
+namespace drake::ballbot {
 int do_main() {
   systems::DiagramBuilder<double> builder;
 
@@ -86,9 +85,9 @@ int do_main() {
 
   return 0;
 }
-}  // namespace drake
+}  // namespace drake::ballbot
 
 int main() {
-  static_cast<void>(drake::do_main());
+  static_cast<void>(drake::ballbot::do_main());
   return 0;
 }

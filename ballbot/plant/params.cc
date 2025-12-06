@@ -5,7 +5,7 @@
 
 #include "drake/common/never_destroyed.h"
 
-namespace drake {
+namespace drake::ballbot {
 
 const int BallbotParamsIndicies::kNumCoordinates;
 const int BallbotParamsIndicies::kMassK;
@@ -27,4 +27,4 @@ const std::vector<std::string>& BallbotParamsIndicies::GetCoordinateNames() {
                                "Theta_w", "Theta_a", "gravity"});
   return coordinates.access();
 }
-}  // namespace drake
+}  // namespace drake::ballbot

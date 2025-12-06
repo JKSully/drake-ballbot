@@ -4,7 +4,6 @@
 #include <memory>
 
 #include <Eigen/Core>
-#define FMT_HEADER_ONLY
 #include <fmt/core.h>
 
 #include "ballbot/plant/input.h"
@@ -24,7 +23,7 @@
 #include "drake/systems/framework/continuous_state.h"
 #include "drake/systems/framework/state.h"
 
-namespace drake {
+namespace drake::ballbot {
 
 using trajectories::PiecewisePolynomial;
 template <typename T>
@@ -177,11 +176,11 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
   auto const state_error = dircol_->state() - dummy_state;
   auto const input_error = dircol_->input();
 
-  dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
-                          input_error.transpose() * R_ * input_error);
+  // dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
+  //                         input_error.transpose() * R_ * input_error);
 }
 
 // DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
 //     class BallbotNLMPC);
 template class BallbotNLMPC<double>;
-}  // namespace drake
+}  // namespace drake::ballbot

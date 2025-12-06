@@ -4,6 +4,7 @@ cc_library(
     hdrs = ["state.h", "params.h", "input.h", "plant.h"],
     deps = [
         "@drake//:drake_shared_library",
+        "@fmt"
     ],
     visibility = ["//visibility:public"],
 )

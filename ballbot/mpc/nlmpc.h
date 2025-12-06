@@ -9,7 +9,7 @@
 #include "drake/solvers/solver_base.h"
 #include "drake/systems/framework/leaf_system.h"
 
-namespace drake {
+namespace drake::ballbot {
 template <typename T>
 
 class BallbotNLMPC final : public systems::LeafSystem<T> {
@@ -62,4 +62,4 @@ class BallbotNLMPC final : public systems::LeafSystem<T> {
 
   void SetupTrajectoryOptimization_();
 };
-}  // namespace drake
+}  // namespace drake::ballbot
