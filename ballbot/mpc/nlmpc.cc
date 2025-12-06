@@ -4,7 +4,6 @@
 #include <memory>
 
 #include <Eigen/Core>
-#define FMT_HEADER_ONLY
 #include <fmt/core.h>
 
 #include "ballbot/plant/input.h"

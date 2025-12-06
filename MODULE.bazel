@@ -1,34 +1,71 @@
 # SPDX-License-Identifier: MIT-0
 
-module(name = "drake_testing")
+module(name = "drake_external_examples")
 
-# Add the Bazel rulesets we need.
+# If you don't want to support building on macOS, you may remove the next line.
+# Note that it must appear prior to loading "rules_cc", per the documentation:
+#  https://github.com/bazelbuild/apple_support?tab=readme-ov-file#bazel-7-setup
+bazel_dep(name = "apple_support", version = "1.24.5")
+
+# Add the Bazel rules we need.
 bazel_dep(name = "rules_cc", version = "0.2.14")
 bazel_dep(name = "rules_python", version = "1.7.0")
 
-# Use the host system python.
-register_toolchains("@rules_python//python/runtime_env_toolchains:all")
+# Here we introduce Drake as a module dependency, but note that Drake is not
+# published to any Bazel registry. Below, we'll override it with a github
+# source archive.
+bazel_dep(name = "drake")
 
-# Disable the exec tools toolchain.
-register_toolchains("//:python_no_exec_tools_toolchain")
+# By default, this example always uses the latest Drake master branch.
+DRAKE_COMMIT = "master"
+DRAKE_CHECKSUM = None
 
-# Use the host system Eigen.
-local_eigen_repository = use_repo_rule("//:eigen.bzl", "local_eigen_repository")
-local_eigen_repository(name = "eigen")
+# You can choose a specific revision of Drake to use, e.g.:
+# DRAKE_COMMIT = "19bb4703fdf4950d4b3530d496d8a0ff1ca5fc22"
+# DRAKE_CHECKSUM = "489d255db3cb1c8ff7a91ae0f961d76b6083a1d4a3f58150371b4b359683adb6"
+#
+# You can also use DRAKE_COMMIT to choose a Drake release; e.g.:
+# DRAKE_COMMIT = "v0.15.0"
+# DRAKE_CHECKSUM = "... TBD ..."
+#
+# Before changing the COMMIT, temporarily uncomment the next line so that Bazel
+# displays the suggested new value for the CHECKSUM.
+# DRAKE_CHECKSUM = "0" * 64
 
-# Use a downloaded, pre-compiled build of Drake.
-http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-http_archive(
-    name = "drake",
-    urls = [
-        # This URL refers to the most recent nightly build of Drake (which is
-        # helpful for our CI test coverage). Users will probably want to pin
-        # this to a specific release version, instead. To find those URLs,
-        # refer to https://github.com/RobotLocomotion/drake/releases.
-        "https://github.com/RobotLocomotion/drake/releases/download/v1.47.0/drake-1.47.0-noble.tar.gz"
-    ],
-    build_file = "drake.BUILD.bazel",
-    strip_prefix = "drake",
+# This declares the `@drake` module as a source code archive from github.
+# See README.md for instructions to use a local path, instead.
+archive_override(
+    module_name = "drake",
+    urls = [x.format(DRAKE_COMMIT) for x in [
+        "https://github.com/RobotLocomotion/drake/archive/{}.tar.gz",
+    ]],
+    strip_prefix = "drake-{}".format(DRAKE_COMMIT.lstrip("v")),
+)
+
+# Use the host system /usr/bin/python3.
+python_repository = use_repo_rule(
+    "@drake//tools/workspace/python:repository.bzl",
+    "python_repository",
+)
+
+python_repository(
+    name = "python",
+    linux_interpreter_path = "/usr/bin/python3",
+    requirements_flavor = "build",
+)
+
+register_toolchains("@python//:all")
+
+# If you would like to re-use one of Drake's public dependencies, you can do so
+# via the `drake_dep_repositories` module extension. For a list of available
+# dependencies, refer to Drake's MODULE.bazel file.
+drake_dep_repositories = use_extension(
+    "@drake//tools/workspace:default.bzl",
+    "drake_dep_repositories",
+)
+use_repo(
+    drake_dep_repositories,
+    "eigen",
 )
 
 # Hedron's Compile Commands Extractor for Bazel
