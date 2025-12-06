@@ -1,0 +1,19 @@
+// Project tasks configuration. See https://zed.dev/docs/tasks for documentation.
+//
+// Example:
+[
+  {
+    "label": "Bazel build (all)",
+    "command": "bazel build //...",
+    "use_new_terminal": false,
+    "shell": "system",
+    "hide": "on_success"
+  },
+  {
+    "label": "Bazel clean",
+    "command": "bazel clean --expunge",
+    "use_new_terminal": false,
+    "shell": "system",
+    "hide": "on_success"
+  }
+]
