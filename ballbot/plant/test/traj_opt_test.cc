@@ -11,23 +11,18 @@
 
 namespace drake {
 
-GTEST_TEST(TrajectoryOptimizationTest, DirectCollocation) {
+TEST(TrajectoryOptimizationTest, DirectCollocation) {
   // Create a plant
   auto plant = std::make_unique<drake::ballbot::BallbotPlant<double>>();
   auto context = plant->CreateDefaultContext();
 
-  GTEST_LOG_(INFO) << fmt::format("Plant input port size: {}",
-                                  plant->get_input_port().size());
-  GTEST_LOG_(INFO) << fmt::format("Plant output port size: {}",
-                                  plant->get_output_port().size());
-
   // Create a trajectory optimization problem
   constexpr int N = 21;
-  constexpr double t_f = 10.0;
-  constexpr double time_step = t_f / (N - 1);
+  constexpr double T_F = 10.0;
+  constexpr double TIME_STEP = T_F / (N - 1);
   auto traj_opt =
       std::make_unique<planning::trajectory_optimization::DirectCollocation>(
-          plant.get(), *context, N, time_step, time_step);
+          plant.get(), *context, N, TIME_STEP, TIME_STEP);
   auto& prog = traj_opt->prog();
 
   traj_opt->AddEqualTimeIntervalsConstraints();
@@ -45,15 +40,15 @@ GTEST_TEST(TrajectoryOptimizationTest, DirectCollocation) {
   auto const state_error = traj_opt->state() - final_state;
   auto const input_error = traj_opt->input();
 
-  Matrix4<double> Q;
-  Q(0, 0) = 1.0;
-  Q(2, 2) = 1'000.0;
+  Matrix4<double> q;
+  q(0, 0) = 1.0;
+  q(2, 2) = 1'000.0;
 
-  Eigen::Matrix<double, 1, 1> R;
-  R(0, 0) = 1.0;
+  Eigen::Matrix<double, 1, 1> r;
+  r(0, 0) = 1.0;
 
-  traj_opt->AddRunningCost(state_error.transpose() * Q * state_error +
-                           input_error.transpose() * R * input_error);
+  traj_opt->AddRunningCost(state_error.transpose() * q * state_error +
+                           input_error.transpose() * r * input_error);
 
   auto solver = solvers::SnoptSolver();
   auto result = solver.Solve(prog);

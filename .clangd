@@ -37,6 +37,7 @@ Diagnostics:
       # Additional checks not in Drake
       - readability-identifier-length
       - modernize-use-trailing-return-type
+      - cppcoreguidelines-avoid-do-while
     CheckOptions:
       readability-identifier-naming.ClassCase: CamelCase
       readability-identifier-naming.NamespaceCase: lower_case
@@ -46,7 +47,7 @@ Diagnostics:
       # Additional checks not in Drake
       readability-identifier-naming.StaticMemberCase: CamelCase
       readability-identifier-naming.StaticConstantPrefix: k
-
+      readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
 ---
 # C++ source
 If:
