@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "ballbot/plant/plant.h"
+#include "gtest/gtest.h"
 
 #include "drake/common/eigen_types.h"
 #include "drake/planning/trajectory_optimization/direct_collocation.h"
@@ -15,6 +16,9 @@ TEST(TrajectoryOptimizationTest, DirectCollocation) {
   // Create a plant
   auto plant = std::make_unique<drake::ballbot::BallbotPlant<double>>();
   auto context = plant->CreateDefaultContext();
+
+  auto& params = plant->get_mutable_parameters(context.get());
+  plant->SetEthBallbotParameters(&params);
 
   // Create a trajectory optimization problem
   constexpr int N = 21;
@@ -38,7 +42,6 @@ TEST(TrajectoryOptimizationTest, DirectCollocation) {
                                 traj_opt->final_state());
 
   auto const state_error = traj_opt->state() - final_state;
-  auto const input_error = traj_opt->input();
 
   Matrix4<double> q;
   q(0, 0) = 1.0;
@@ -47,12 +50,11 @@ TEST(TrajectoryOptimizationTest, DirectCollocation) {
   Eigen::Matrix<double, 1, 1> r;
   r(0, 0) = 1.0;
 
-  traj_opt->AddRunningCost(state_error.transpose() * q * state_error +
-                           input_error.transpose() * r * input_error);
+  traj_opt->AddRunningCost(state_error.transpose() * q * state_error);
 
   auto solver = solvers::SnoptSolver();
   auto result = solver.Solve(prog);
 
-  GTEST_ASSERT_TRUE(result.is_success());
+  ASSERT_TRUE(result.is_success());
 }
 }  // namespace drake

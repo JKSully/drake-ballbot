@@ -4,6 +4,7 @@ cc_test(
         "//ballbot/plant:ballbot_plant",
         "@googletest//:gtest_main",
     ],
+    size = "large",
     srcs = ["traj_opt_test.cc"],
 )
 

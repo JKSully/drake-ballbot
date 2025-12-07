@@ -165,19 +165,21 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
 
   dircol_->AddEqualTimeIntervalsConstraints();
 
-  auto const dummy_state =
+  auto const initial_state =
       VectorX<double>::Zero(model_->get_output_port().size());
   initial_state_constraint_ = prog.AddBoundingBoxConstraint(
-      dummy_state, dummy_state, dircol_->initial_state());
+      initial_state, initial_state, dircol_->initial_state());
 
+  auto const goal_state =
+      VectorX<double>::Zero(model_->get_output_port().size());
   goal_state_constraint_ = prog.AddBoundingBoxConstraint(
-      dummy_state, dummy_state, dircol_->final_state());
+      goal_state, goal_state, dircol_->final_state());
 
-  auto const state_error = dircol_->state() - dummy_state;
+  auto const state_error = dircol_->state() - goal_state;
   auto const input_error = dircol_->input();
 
-  // dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
-  //                         input_error.transpose() * R_ * input_error);
+  dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
+                          input_error.transpose() * R_ * input_error);
 }
 
 // DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(

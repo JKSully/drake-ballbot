@@ -135,7 +135,7 @@ void BallbotPlant<T>::DoCalcTimeDerivatives(
     const systems::Context<T>& context,
     systems::ContinuousState<T>* derivatives) const {
   BallbotState<T> const& state = get_state(context);
-  BallbotState<T>& derivate_vector = get_mutable_state(derivatives);
+  BallbotState<T>& derivative_vector = get_mutable_state(derivatives);
 
   Matrix2<T> const mass = MassMatrix(context);
   Vector2<T> const coriolis = Coriolis(context);
@@ -146,10 +146,10 @@ void BallbotPlant<T>::DoCalcTimeDerivatives(
   math::LinearSolver<Eigen::LLT, Eigen::Matrix<T, 2, 2>> const solver(mass);
   Vector2<T> const qddot = solver.Solve(b);
 
-  derivate_vector.set_ball_angle(state.ball_velocity());
-  derivate_vector.set_ball_velocity(qddot(0));
-  derivate_vector.set_lean_angle(state.lean_velocity());
-  derivate_vector.set_lean_velocity(qddot(1));
+  derivative_vector.set_ball_angle(state.ball_velocity());
+  derivative_vector.set_ball_velocity(qddot(0));
+  derivative_vector.set_lean_angle(state.lean_velocity());
+  derivative_vector.set_lean_velocity(qddot(1));
 }
 
 }  // namespace drake::ballbot
