@@ -22,17 +22,19 @@ using std::sin;
 namespace drake::ballbot {
 template <typename T>
 BallbotPlant<T>::BallbotPlant()
-    : systems::LeafSystem<T>(systems::SystemTypeTag<BallbotPlant>{}) {
+    : systems::LeafSystem<T>(systems::SystemTypeTag<BallbotPlant>{}),
+      u_index_(
+          this->DeclareVectorInputPort("u", BallbotInput<T>()).get_index()),
+      state_index_(
+          this->DeclareStateOutputPort("state", this->DeclareContinuousState(
+                                                    BallbotState<T>(), 2, 2, 0))
+              .get_index()) {
   this->DeclareNumericParameter(BallbotParams<T>());
-  u_index_ = this->DeclareVectorInputPort("u", BallbotInput<T>()).get_index();
-
-  auto state_index = this->DeclareContinuousState(BallbotState<T>(), 2, 2, 0);
-  state_index_ = this->DeclareStateOutputPort("state", state_index).get_index();
 }
 
 template <typename T>
 template <typename U>
-BallbotPlant<T>::BallbotPlant(const BallbotPlant<U>&) : BallbotPlant<T>() {}
+BallbotPlant<T>::BallbotPlant(const BallbotPlant<U>&) : BallbotPlant() {}
 
 template <typename T>
 BallbotPlant<T>::~BallbotPlant() = default;
