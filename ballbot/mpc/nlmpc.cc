@@ -1,7 +1,8 @@
 #include "ballbot/mpc/nlmpc.h"
 
-#include <iostream>
+#include <cmath>
 #include <memory>
+#include <stdexcept>
 
 #include <Eigen/Core>
 #include <fmt/core.h>
@@ -38,7 +39,9 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
       sample_time_(T_f / (N - 1)),
       model_context_(model_->CreateDefaultContext()) {
   DRAKE_DEMAND(model_ != nullptr);
-  DRAKE_DEMAND(N_ > 0);
+  // Require at least two collocation points (N must be >= 2) so that the
+  // denominator (N - 1) used to compute `sample_time_` is non-zero.
+  DRAKE_DEMAND(N_ >= 2);
   DRAKE_DEMAND(T_f_ > 0.);
 
   int const num_states = model_->get_output_port(0).size();
@@ -112,17 +115,29 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
     dircol_->SetInitialTrajectory(initial_input_trajectory,
                                   initial_state_trajectory);
   } else {
-    VectorX<double> breaks(2);
-    breaks << 0., T_f_;
+    VectorX<double> breaks(N_);
+    for (int i = 0; i < N_; ++i) {
+      breaks(i) = i * sample_time_;
+    }
 
-    int const state_size = initial_state.size();
-    MatrixX<double> samples(state_size, 2);
-    samples << initial_state, initial_state;
+    MatrixX<double> state_samples(get_state_input_port().size(), N_);
+    for (int i = 0; i < N_; ++i) {
+      double alpha = static_cast<double>(i) / (N_ - 1);
+      state_samples.col(i) =
+          (initial_state * (1.0 - alpha)) + (goal_state * alpha);
+    }
 
-    auto const state_trajectory_guess =
-        PiecewisePolynomial<double>::FirstOrderHold(breaks, samples);
-    dircol_->SetInitialTrajectory(PiecewisePolynomial<double>(),
-                                  state_trajectory_guess);
+    auto state_guess =
+        trajectories::PiecewisePolynomial<double>::FirstOrderHold(
+            breaks, state_samples);
+
+    MatrixX<double> input_samples =
+        MatrixX<double>::Zero(get_action_output_port().size(), N_);
+    auto input_guess =
+        trajectories::PiecewisePolynomial<double>::FirstOrderHold(
+            breaks, input_samples);
+
+    dircol_->SetInitialTrajectory(input_guess, state_guess);
   }
 
   solvers::MathematicalProgramResult const result =
@@ -131,7 +146,7 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
   if (!result.is_success()) {
     auto infeasible = result.GetInfeasibleConstraints(dircol_->prog());
     for (auto const& constraint : infeasible) {
-      std::cout << constraint << '\n';
+      fmt::println("Infeasible constraint: {}", constraint);
     }
   }
 
