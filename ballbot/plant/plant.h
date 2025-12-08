@@ -7,16 +7,12 @@
 
 #include "drake/common/drake_copyable.h"
 #include "drake/common/eigen_types.h"
-#include "drake/math/linear_solve.h"
 #include "drake/systems/framework/basic_vector.h"
 #include "drake/systems/framework/context.h"
 #include "drake/systems/framework/continuous_state.h"
 #include "drake/systems/framework/framework_common.h"
 #include "drake/systems/framework/input_port.h"
-#include "drake/systems/framework/input_port_base.h"
 #include "drake/systems/framework/leaf_system.h"
-#include "drake/systems/framework/output_port_base.h"
-#include "drake/systems/framework/vector_base.h"
 
 namespace drake::ballbot {
 template <typename T>
@@ -28,6 +24,8 @@ class BallbotPlant final : public systems::LeafSystem<T> {
 
   template <typename U>
   explicit BallbotPlant(const BallbotPlant<U>&);
+
+  ~BallbotPlant() final;
 
   const systems::InputPort<T>& get_action_input_port() const {
     return this->get_input_port(u_index_);

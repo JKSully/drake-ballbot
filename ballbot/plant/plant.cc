@@ -6,12 +6,10 @@
 #include "ballbot/plant/params.h"
 #include "ballbot/plant/state.h"
 
-#include "drake/common/autodiff.h"
 #include "drake/common/default_scalars.h"
 #include "drake/common/drake_assert.h"
 #include "drake/common/eigen_types.h"
 #include "drake/math/linear_solve.h"
-#include "drake/systems/framework/basic_vector.h"
 #include "drake/systems/framework/context.h"
 #include "drake/systems/framework/continuous_state.h"
 #include "drake/systems/framework/leaf_system.h"
@@ -35,6 +33,9 @@ BallbotPlant<T>::BallbotPlant()
 template <typename T>
 template <typename U>
 BallbotPlant<T>::BallbotPlant(const BallbotPlant<U>&) : BallbotPlant<T>() {}
+
+template <typename T>
+BallbotPlant<T>::~BallbotPlant() = default;
 
 template <typename T>
 void BallbotPlant<T>::SetEthBallbotParameters(

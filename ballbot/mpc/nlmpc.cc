@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <memory>
-#include <stdexcept>
 
 #include <Eigen/Core>
 #include <fmt/core.h>
@@ -10,18 +9,14 @@
 #include "ballbot/plant/input.h"
 #include "ballbot/plant/state.h"
 
-#include "drake/common/default_scalars.h"
 #include "drake/common/drake_assert.h"
 #include "drake/common/eigen_types.h"
 #include "drake/common/trajectories/piecewise_polynomial.h"
-#include "drake/common/trajectories/piecewise_trajectory.h"
 #include "drake/common/value.h"
 #include "drake/planning/trajectory_optimization/direct_collocation.h"
 #include "drake/solvers/ipopt_solver.h"
 #include "drake/solvers/mathematical_program_result.h"
-#include "drake/systems/framework/basic_vector.h"
 #include "drake/systems/framework/context.h"
-#include "drake/systems/framework/continuous_state.h"
 #include "drake/systems/framework/state.h"
 
 namespace drake::ballbot {
