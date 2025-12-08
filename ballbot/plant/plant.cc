@@ -153,6 +153,61 @@ void BallbotPlant<T>::DoCalcTimeDerivatives(
   derivative_vector.set_lean_velocity(qddot(1));
 }
 
+template <typename T>
+T BallbotPlant<T>::DoCalcPotentialEnergy(
+    const systems::Context<T>& context) const {
+  BallbotParams<T> const& params = this->get_parameters(context);
+  BallbotState<T> const& state = get_state(context);
+
+  T const ball_potential_energy = 0.0;
+
+  T const wheel_potential_energy = params.mass_w() * params.gravity() *
+                                   (params.radius_k() + params.radius_w()) *
+                                   cos(state.ball_angle());
+
+  T const body_potential_energy =
+      params.mass_a() * params.gravity() * params.l() * cos(state.ball_angle());
+
+  T const total_potential_energy =
+      ball_potential_energy + wheel_potential_energy + body_potential_energy;
+
+  return total_potential_energy;
+}
+
+template <typename T>
+T BallbotPlant<T>::DoCalcKineticEnergy(
+    const systems::Context<T>& context) const {
+  BallbotParams<T> const& params = this->get_parameters(context);
+  BallbotState<T> const& state = get_state(context);
+
+  T const d_phi = state.lean_angle();
+
+  T const ball_kinetic_energy =
+      (0.5 * params.mass_k() * pow(params.radius_k() * d_phi, 2)) +
+      (0.5 * params.theta_k() + pow(d_phi, 2));
+
+  T const wheel_kinetic_energy =
+      (0.5 * params.mass_w() *
+       (pow(params.radius_k() * d_phi, 2) +
+        2 * (params.radius_k() + params.radius_w()) * cos(state.ball_angle()) *
+            state.ball_velocity() * (params.radius_k() * d_phi) +
+        pow(params.radius_k() + params.radius_w(), 2) *
+            pow(state.ball_velocity(), 2)));
+
+  T const body_kinetic_energy =
+      (0.5 * params.mass_a() *
+       (pow(params.radius_k() * d_phi, 2) +
+        2.0 * params.l() * cos(state.ball_angle()) * state.ball_velocity() *
+            (params.radius_k() * d_phi) +
+        (params.l() * pow(state.ball_velocity(), 2)))) +
+      (0.5 * params.theta_a() * pow(state.ball_velocity(), 2));
+
+  T const total_kinetic_energy =
+      ball_kinetic_energy + wheel_kinetic_energy + body_kinetic_energy;
+
+  return total_kinetic_energy;
+}
+
 }  // namespace drake::ballbot
 DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
     class drake::ballbot::BallbotPlant);

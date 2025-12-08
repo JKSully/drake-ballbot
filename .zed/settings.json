@@ -7,7 +7,8 @@
           "--pretty",
           "--background-index",
           "--clang-tidy",
-          "--query-driver=/usr/bin/g++"
+          "--query-driver=/usr/bin/g++",
+          "--header-insertion=never"
         ]
       }
     }

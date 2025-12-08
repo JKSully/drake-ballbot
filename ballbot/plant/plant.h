@@ -84,5 +84,9 @@ class BallbotPlant final : public systems::LeafSystem<T> {
   void DoCalcTimeDerivatives(
       const systems::Context<T>& context,
       systems::ContinuousState<T>* derivatives) const override;
+
+  T DoCalcPotentialEnergy(const systems::Context<T>& context) const override;
+
+  T DoCalcKineticEnergy(const systems::Context<T>& context) const override;
 };
 }  // namespace drake::ballbot
