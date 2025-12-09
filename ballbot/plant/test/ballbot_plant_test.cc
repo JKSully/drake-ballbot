@@ -19,12 +19,12 @@ TEST(PlantTest, SetEthBallbotParameters) {
   auto context = plant->CreateDefaultContext();
   auto& params = plant->get_mutable_parameters(context.get());
 
-  double const mass_a_old = params.mass_a();
+  double const length_old = params.l();
 
   plant->SetEthBallbotParameters(&params);
 
-  double const mass_a_new = params.mass_a();
+  double const length_new = params.l();
 
-  EXPECT_EQ(mass_a_new, mass_a_old);
+  EXPECT_NE(length_new, length_old);
 }
 }  // namespace drake
