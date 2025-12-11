@@ -54,8 +54,8 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
   DRAKE_DEMAND(num_states == Q_.rows() && num_states == Q_.cols());
   DRAKE_DEMAND(num_inputs == R_.rows() && num_inputs == R_.cols());
 
-  Eigen::LLT<Eigen::MatrixXd> R_chol(R_);
-  DRAKE_ASSERT(R_chol.info() == Eigen::Success);
+  Eigen::LLT<Eigen::MatrixXd> r_cholesky(R_);
+  DRAKE_ASSERT(r_cholesky.info() == Eigen::Success);
 
   VectorX<double> breaks(2);
   breaks << 0., 1.;
@@ -148,7 +148,12 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
   auto const input_trajectory = dircol_->ReconstructInputTrajectory(result);
   auto const state_trajectory = dircol_->ReconstructStateTrajectory(result);
 
-  state->get_abstract_state();
+  state->template get_mutable_abstract_state<PiecewisePolynomial<double>>(
+      input_trajectory_index_) = input_trajectory;
+  state->template get_mutable_abstract_state<PiecewisePolynomial<double>>(
+      state_trajectory_index_) = state_trajectory;
+  state->template get_mutable_abstract_state<double>(time_offset_index_) =
+      sim_time;
 }
 
 template <typename T>
@@ -156,14 +161,14 @@ void BallbotNLMPC<T>::DoCalcAction_(const systems::Context<T>& context,
                                     BallbotInput<T>* output) const {
   auto const sim_time = context.get_time();
   auto const time_offset =
-      context.template get_abstract_state<T>(time_offset_index_);
+      context.template get_abstract_state<double>(time_offset_index_);
   auto const& input_trajectory =
       context.template get_abstract_state<PiecewisePolynomial<T>>(
           input_trajectory_index_);
 
-  T const time_delta = sim_time - time_offset;
-  auto V = input_trajectory.scalarValue(time_delta);
-  output->set_tau(V);
+  double const time_delta = sim_time - time_offset;
+  double const knot = input_trajectory.scalarValue(time_delta);
+  output->set_tau(knot);
 }
 
 template <typename T>
