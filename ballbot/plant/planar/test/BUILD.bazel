@@ -1,7 +1,7 @@
 cc_test(
     name = "traj_opt_test",
     deps = [
-        "//ballbot/plant:ballbot_plant",
+        "//ballbot/plant/planar:ballbot_plant",
         "@googletest//:gtest_main",
     ],
     size = "large",
@@ -11,7 +11,7 @@ cc_test(
 cc_test(
     name = "ballbot_plant_test",
     deps = [
-        "//ballbot/plant:ballbot_plant",
+        "//ballbot/plant/planar:ballbot_plant",
         "@googletest//:gtest_main",
     ],
     srcs = ["ballbot_plant_test.cc"],

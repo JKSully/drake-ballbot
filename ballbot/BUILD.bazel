@@ -5,7 +5,7 @@ cc_binary(
     srcs = ["mpc_main.cc"],
     deps = [
         "@drake//:drake_shared_library",
-        "//ballbot/plant:ballbot_plant",
+        "//ballbot/plant/planar:ballbot_plant",
         "//ballbot/mpc:ballbot_mpc",
     ]
 )

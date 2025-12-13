@@ -2,8 +2,8 @@
 
 #include <Eigen/Core>
 
-#include "ballbot/plant/params.h"
-#include "ballbot/plant/state.h"
+#include "ballbot/plant/planar/params.h"
+#include "ballbot/plant/planar/state.h"
 
 #include "drake/common/drake_copyable.h"
 #include "drake/common/eigen_types.h"
@@ -14,7 +14,7 @@
 #include "drake/systems/framework/input_port.h"
 #include "drake/systems/framework/leaf_system.h"
 
-namespace drake::ballbot {
+namespace drake::ballbot::planar {
 template <typename T>
 class BallbotPlant final : public systems::LeafSystem<T> {
  public:
@@ -89,4 +89,4 @@ class BallbotPlant final : public systems::LeafSystem<T> {
 
   T DoCalcKineticEnergy(const systems::Context<T>& context) const override;
 };
-}  // namespace drake::ballbot
+}  // namespace drake::ballbot::planar

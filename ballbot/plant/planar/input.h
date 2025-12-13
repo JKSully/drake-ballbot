@@ -12,7 +12,7 @@
 #include "drake/common/name_value.h"
 #include "drake/systems/framework/basic_vector.h"
 
-namespace drake::ballbot {
+namespace drake::ballbot::planar {
 
 struct BallbotInputIndicies {
   static int const kNumCoordinates = 1;
@@ -98,4 +98,4 @@ class BallbotInput final : public systems::BasicVector<T> {
     }
   }
 };
-}  // namespace drake::ballbot
+}  // namespace drake::ballbot::planar

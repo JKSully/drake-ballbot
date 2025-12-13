@@ -1,11 +1,11 @@
-#include "ballbot/plant/params.h"
+#include "ballbot/plant/planar/params.h"
 
 #include <string>
 #include <vector>
 
 #include "drake/common/never_destroyed.h"
 
-namespace drake::ballbot {
+namespace drake::ballbot::planar {
 
 const int BallbotParamsIndicies::kNumCoordinates;
 const int BallbotParamsIndicies::kMassK;
@@ -27,4 +27,4 @@ const std::vector<std::string>& BallbotParamsIndicies::GetCoordinateNames() {
                                "Theta_w", "Theta_a", "gravity"});
   return coordinates.access();
 }
-}  // namespace drake::ballbot
+}  // namespace drake::ballbot::planar

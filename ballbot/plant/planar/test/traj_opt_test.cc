@@ -6,7 +6,7 @@
 #include <fmt/format.h>
 #include <gtest/gtest.h>
 
-#include "ballbot/plant/plant.h"
+#include "ballbot/plant/planar/plant.h"
 
 #include "drake/common/eigen_types.h"
 #include "drake/common/trajectories/piecewise_polynomial.h"
@@ -18,10 +18,10 @@ bool approxEq(T a, T b) {
   return std::abs(a - b) < std::numeric_limits<T>::epsilon();
 }
 
-namespace drake {
+namespace drake::ballbot::planar {
 TEST(TrajectoryOptimizationTest, DirectCollocation) {
   // Create a plant
-  auto plant = std::make_unique<drake::ballbot::BallbotPlant<double>>();
+  auto plant = std::make_unique<BallbotPlant<double>>();
   auto context = plant->CreateDefaultContext();
 
   auto& params = plant->get_mutable_parameters(context.get());
@@ -93,4 +93,4 @@ TEST(TrajectoryOptimizationTest, DirectCollocation) {
 
   ASSERT_TRUE(result.is_success());
 }
-}  // namespace drake
+}  // namespace drake::ballbot::planar

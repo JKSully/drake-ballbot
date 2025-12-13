@@ -7,7 +7,7 @@
 #include <fmt/ostream.h>
 
 #include "ballbot/mpc/nlmpc.h"
-#include "ballbot/plant/plant.h"
+#include "ballbot/plant/planar/plant.h"
 
 #include "drake/common/eigen_types.h"
 #include "drake/geometry/drake_visualizer.h"
@@ -19,14 +19,14 @@
 #include "drake/systems/primitives/vector_log.h"
 #include "drake/systems/primitives/vector_log_sink.h"
 
-namespace drake::ballbot {
+namespace drake::ballbot::planar {
 int do_main() {
   constexpr int N = 21;
   constexpr double T_F = 10.0;
 
   systems::DiagramBuilder<double> builder;
 
-  auto ballbot = builder.AddSystem<BallbotPlant>();
+  auto* ballbot = builder.AddSystem<BallbotPlant>();
 
   ballbot->set_name("ballbot");
 
@@ -37,7 +37,7 @@ int do_main() {
   MatrixX<double> R = MatrixX<double>::Identity(1, 1);
   R(0, 0) = 1.0;
 
-  auto controller = builder.AddSystem<BallbotNLMPC>(
+  auto* controller = builder.AddSystem<BallbotNLMPC>(
       std::make_shared<BallbotPlant<double>>(), Q, R, N, T_F);
   std::unique_ptr<systems::Context<double>> controller_context =
       controller->CreateDefaultContext();
@@ -91,15 +91,15 @@ int do_main() {
   Eigen::IOFormat fmt(Eigen::FullPrecision, Eigen::DontAlignCols, ", ", "\n",
                       "[", "]", "[", "]");
 
-  std::cout << "Sample times: " << times.format(fmt) << std::endl;
-  std::cout << "States: " << states.format(fmt) << std::endl;
+  // std::cout << "Sample times: " << times.format(fmt) << std::endl;
+  // std::cout << "States: " << states.format(fmt) << std::endl;
   std::cout << "Actions: " << actions.format(fmt) << std::endl;
 
   return 0;
 }
-}  // namespace drake::ballbot
+}  // namespace drake::ballbot::planar
 
 int main() {
-  static_cast<void>(drake::ballbot::do_main());
+  static_cast<void>(drake::ballbot::planar::do_main());
   return 0;
 }

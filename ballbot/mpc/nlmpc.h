@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "ballbot/plant/input.h"
+#include "ballbot/plant/planar/input.h"
 
 #include "drake/planning/trajectory_optimization/direct_collocation.h"
 #include "drake/solvers/constraint.h"
@@ -55,7 +55,7 @@ class BallbotNLMPC final : public systems::LeafSystem<T> {
       goal_state_constraint_;
 
   void DoCalcAction_(const systems::Context<T>& context,
-                     BallbotInput<T>* output) const;
+                     planar::BallbotInput<T>* output) const;
 
   void UpdateAndSolve_(const systems::Context<T>& context,
                        systems::State<T>* state) const;

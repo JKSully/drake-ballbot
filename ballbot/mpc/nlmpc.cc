@@ -6,8 +6,8 @@
 #include <Eigen/Core>
 #include <fmt/core.h>
 
-#include "ballbot/plant/input.h"
-#include "ballbot/plant/state.h"
+#include "ballbot/plant/planar/input.h"
+#include "ballbot/plant/planar/state.h"
 
 #include "drake/common/drake_assert.h"
 #include "drake/common/eigen_types.h"
@@ -43,11 +43,13 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
   int const num_inputs = model_->get_input_port(0).size();
 
   state_input_port_index_ =
-      this->DeclareVectorInputPort("state", BallbotState<T>()).get_index();
+      this->DeclareVectorInputPort("state", planar::BallbotState<T>())
+          .get_index();
   goal_input_port_index_ =
-      this->DeclareVectorInputPort("goal", BallbotState<T>()).get_index();
+      this->DeclareVectorInputPort("goal", planar::BallbotState<T>())
+          .get_index();
   action_output_port_index_ =
-      this->DeclareVectorOutputPort("action", BallbotInput<T>(),
+      this->DeclareVectorOutputPort("action", planar::BallbotInput<T>(),
                                     &BallbotNLMPC<T>::DoCalcAction_)
           .get_index();
 
@@ -158,7 +160,7 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
 
 template <typename T>
 void BallbotNLMPC<T>::DoCalcAction_(const systems::Context<T>& context,
-                                    BallbotInput<T>* output) const {
+                                    planar::BallbotInput<T>* output) const {
   auto const sim_time = context.get_time();
   auto const time_offset =
       context.template get_abstract_state<double>(time_offset_index_);

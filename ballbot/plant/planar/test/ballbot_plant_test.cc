@@ -2,11 +2,11 @@
 
 #include <gtest/gtest.h>
 
-#include "ballbot/plant/plant.h"
+#include "ballbot/plant/planar/plant.h"
 
-namespace drake {
+namespace drake::ballbot::planar {
 TEST(PlantTest, Constructor) {
-  auto plant = std::make_unique<ballbot::BallbotPlant<double>>();
+  auto plant = std::make_unique<BallbotPlant<double>>();
 
   EXPECT_EQ(plant->get_action_input_port().size(), 1);
 
@@ -14,7 +14,7 @@ TEST(PlantTest, Constructor) {
 }
 
 TEST(PlantTest, SetEthBallbotParameters) {
-  auto plant = std::make_unique<ballbot::BallbotPlant<double>>();
+  auto plant = std::make_unique<BallbotPlant<double>>();
 
   auto context = plant->CreateDefaultContext();
   auto& params = plant->get_mutable_parameters(context.get());
@@ -27,4 +27,4 @@ TEST(PlantTest, SetEthBallbotParameters) {
 
   EXPECT_NE(length_new, length_old);
 }
-}  // namespace drake
+}  // namespace drake::ballbot::planar

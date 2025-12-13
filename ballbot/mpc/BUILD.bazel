@@ -4,7 +4,7 @@ cc_library(
     hdrs = ["nlmpc.h"],
     deps = [
         "@drake//:drake_shared_library",
-        "//ballbot/plant:ballbot_plant",
+        "//ballbot/plant/planar:ballbot_plant",
         "@fmt"
     ],
     visibility = ["//visibility:public"],

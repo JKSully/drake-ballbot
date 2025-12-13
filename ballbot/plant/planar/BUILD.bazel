@@ -1,0 +1,10 @@
+cc_library(
+    name = "ballbot_plant",
+    srcs = ["state.cc", "params.cc", "input.cc", "plant.cc"],
+    hdrs = ["state.h", "params.h", "input.h", "plant.h"],
+    deps = [
+        "@drake//:drake_shared_library",
+        "@fmt"
+    ],
+    visibility = ["//visibility:public"],
+)

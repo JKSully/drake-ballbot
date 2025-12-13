@@ -1,10 +1,10 @@
-#include "ballbot/plant/plant.h"
+#include "ballbot/plant/planar/plant.h"
 
 #include <cmath>
 
-#include "ballbot/plant/input.h"
-#include "ballbot/plant/params.h"
-#include "ballbot/plant/state.h"
+#include "ballbot/plant/planar/input.h"
+#include "ballbot/plant/planar/params.h"
+#include "ballbot/plant/planar/state.h"
 
 #include "drake/common/default_scalars.h"
 #include "drake/common/drake_assert.h"
@@ -19,7 +19,7 @@ using std::cos;
 using std::pow;
 using std::sin;
 
-namespace drake::ballbot {
+namespace drake::ballbot::planar {
 template <typename T>
 BallbotPlant<T>::BallbotPlant()
     : systems::LeafSystem<T>(systems::SystemTypeTag<BallbotPlant>{}),
@@ -210,6 +210,6 @@ T BallbotPlant<T>::DoCalcKineticEnergy(
   return total_kinetic_energy;
 }
 
-}  // namespace drake::ballbot
+}  // namespace drake::ballbot::planar
 DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
-    class drake::ballbot::BallbotPlant);
+    class drake::ballbot::planar::BallbotPlant);
