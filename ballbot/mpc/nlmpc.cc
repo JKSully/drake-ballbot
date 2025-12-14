@@ -14,6 +14,7 @@
 #include "drake/common/trajectories/piecewise_polynomial.h"
 #include "drake/common/value.h"
 #include "drake/planning/trajectory_optimization/direct_collocation.h"
+#include "drake/solvers/constraint.h"
 #include "drake/solvers/ipopt_solver.h"
 #include "drake/solvers/mathematical_program_result.h"
 #include "drake/systems/framework/context.h"
@@ -25,13 +26,15 @@ using trajectories::PiecewisePolynomial;
 template <typename T>
 BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
                               MatrixX<double> const& Q,
-                              MatrixX<double> const& R, int N, double T_f)
+                              MatrixX<double> const& R, int N, double T_f,
+                              BallbotConstraints const& constraints)
     : model_(std::move(model)),
       Q_(Q),
       R_(R),
       N_(N),
       T_f_(T_f),
       sample_time_(T_f / (N - 1)),
+      constraints_(constraints),
       model_context_(model_->CreateDefaultContext()) {
   DRAKE_DEMAND(model_ != nullptr);
   // Require at least two collocation points (N must be >= 2) so that the
@@ -191,6 +194,27 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
       VectorX<double>::Zero(model_->get_output_port().size());
   goal_state_constraint_ = prog.AddBoundingBoxConstraint(
       goal_state, goal_state, dircol_->final_state());
+
+  auto const u_constraint = VectorX<double>::Constant(
+      model_->get_input_port().size(), constraints_.u);
+  force_constraints_ = dircol_->AddConstraintToAllKnotPoints(
+      std::make_shared<solvers::BoundingBoxConstraint>(-u_constraint,
+                                                       u_constraint),
+      dircol_->input());
+
+  // auto const theta_constraint =
+  //     VectorX<double>::Constant(1, constraints_.theta);
+  // theta_constraints_ = dircol_->AddConstraintToAllKnotPoints(
+  //     std::make_shared<solvers::BoundingBoxConstraint>(-theta_constraint,
+  //                                                      theta_constraint),
+  //     dircol_->state(planar::BallbotStateIndicies::kLeanAngle));
+
+  // auto const dphi_constraint = VectorX<double>::Constant(1,
+  // constraints_.dphi); theta_constraints_ =
+  // dircol_->AddConstraintToAllKnotPoints(
+  //     std::make_shared<solvers::BoundingBoxConstraint>(-dphi_constraint,
+  //                                                      dphi_constraint),
+  //     dircol_->state(planar::BallbotStateIndicies::kBallVelocity));
 
   auto const state_error = dircol_->state() - goal_state;
   auto const input_error = dircol_->input();

@@ -15,9 +15,8 @@ namespace drake::ballbot::planar {
 struct BallbotStateIndicies {
   static int const kNumCoordinates = 4;
 
-  // TODO: rename these to match paper
-  static int const kBallAngle = 0;
-  static int const kBallVelocity = 1;
+  static int const kWheelAngle = 0;
+  static int const kWheelVelocity = 1;
   static int const kLeanAngle = 2;
   static int const kLeanVelocity = 3;
 
@@ -30,8 +29,8 @@ class BallbotState final : public systems::BasicVector<T> {
   typedef BallbotStateIndicies K;
 
   BallbotState() : systems::BasicVector<T>(K::kNumCoordinates) {
-    this->set_ball_angle(0.0);
-    this->set_ball_velocity(0.0);
+    this->set_wheel_angle(0.0);
+    this->set_wheel_velocity(0.0);
     this->set_lean_angle(0.0);
     this->set_lean_velocity(0.0);
   }
@@ -55,8 +54,8 @@ class BallbotState final : public systems::BasicVector<T> {
   template <typename U = T>
   typename std::enable_if_t<std::is_same_v<U, symbolic::Expression>>
   SetToNamedVariables() {
-    this->set_ball_angle(symbolic::Variable("ball_angle"));
-    this->set_ball_velocity(symbolic::Variable("ball_velocity"));
+    this->set_wheel_angle(symbolic::Variable("ball_angle"));
+    this->set_wheel_velocity(symbolic::Variable("ball_velocity"));
     this->set_lean_angle(symbolic::Variable("lean_angle"));
     this->set_lean_velocity(symbolic::Variable("lean_velocity"));
   }
@@ -65,36 +64,36 @@ class BallbotState final : public systems::BasicVector<T> {
     return new BallbotState;
   }
 
-  const T& ball_angle() const {
+  const T& wheel_angle() const {
     ThrowIfEmpty();
-    return this->GetAtIndex(K::kBallAngle);
+    return this->GetAtIndex(K::kWheelAngle);
   }
 
-  void set_ball_angle(const T& ball_angle) {
+  void set_wheel_angle(const T& ball_angle) {
     ThrowIfEmpty();
-    this->SetAtIndex(K::kBallAngle, ball_angle);
+    this->SetAtIndex(K::kWheelAngle, ball_angle);
   }
 
-  [[nodiscard]] BallbotState<T> with_ball_angle(const T& ball_angle) const {
+  [[nodiscard]] BallbotState<T> with_wheel_angle(const T& ball_angle) const {
     BallbotState<T> result(*this);
-    result.set_ball_angle(ball_angle);
+    result.set_wheel_angle(ball_angle);
     return result;
   }
 
-  const T& ball_velocity() const {
+  const T& wheel_velocity() const {
     ThrowIfEmpty();
-    return this->GetAtIndex(K::kBallVelocity);
+    return this->GetAtIndex(K::kWheelVelocity);
   }
 
-  void set_ball_velocity(const T& ball_velocity) {
+  void set_wheel_velocity(const T& ball_velocity) {
     ThrowIfEmpty();
-    this->SetAtIndex(K::kBallVelocity, ball_velocity);
+    this->SetAtIndex(K::kWheelVelocity, ball_velocity);
   }
 
-  [[nodiscard]] BallbotState<T> with_ball_velocity(
+  [[nodiscard]] BallbotState<T> with_wheel_velocity(
       const T& ball_velocity) const {
     BallbotState<T> result(*this);
-    result.set_ball_velocity(ball_velocity);
+    result.set_wheel_velocity(ball_velocity);
     return result;
   }
 
@@ -133,10 +132,10 @@ class BallbotState final : public systems::BasicVector<T> {
 
   template <typename Archive>
   void Serialize(Archive* a) {
-    T& ball_angle_ref = this->GetAtIndex(K::kBallAngle);
-    a->Visit(MakeNameValue("ball_angle", &ball_angle_ref));
-    T& ball_velocity_ref = this->GetAtIndex(K::kBallVelocity);
-    a->Visit(MakeNameValue("ball_velocity", &ball_velocity_ref));
+    T& ball_angle_ref = this->GetAtIndex(K::kWheelAngle);
+    a->Visit(MakeNameValue("wheel_angle", &ball_angle_ref));
+    T& ball_velocity_ref = this->GetAtIndex(K::kWheelVelocity);
+    a->Visit(MakeNameValue("wheel_velocity", &ball_velocity_ref));
     T& lean_angle_ref = this->GetAtIndex(K::kLeanAngle);
     a->Visit(MakeNameValue("lean_angle", &lean_angle_ref));
     T& lean_velocity_ref = this->GetAtIndex(K::kLeanVelocity);
@@ -150,8 +149,8 @@ class BallbotState final : public systems::BasicVector<T> {
   boolean<T> IsValid() const {
     using std::isnan;
     boolean<T> result(true);
-    result = result && !isnan(this->ball_angle());
-    result = result && !isnan(this->ball_velocity());
+    result = result && !isnan(this->wheel_angle());
+    result = result && !isnan(this->wheel_velocity());
     result = result && !isnan(this->lean_angle());
     result = result && !isnan(this->lean_velocity());
     return result;
