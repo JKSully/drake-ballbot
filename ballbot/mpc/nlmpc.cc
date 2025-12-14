@@ -60,7 +60,7 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
   DRAKE_DEMAND(num_inputs == R_.rows() && num_inputs == R_.cols());
 
   Eigen::LLT<Eigen::MatrixXd> r_cholesky(R_);
-  DRAKE_ASSERT(r_cholesky.info() == Eigen::Success);
+  DRAKE_THROW_UNLESS(r_cholesky.info() == Eigen::Success);
 
   VectorX<double> breaks(2);
   breaks << 0., 1.;
@@ -81,7 +81,7 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
   SetupTrajectoryOptimization_();
 
   this->DeclarePeriodicUnrestrictedUpdateEvent(
-      T_f_, 0., &BallbotNLMPC<T>::UpdateAndSolve_);
+      sample_time_, 0., &BallbotNLMPC<T>::UpdateAndSolve_);
 }
 
 template <typename T>

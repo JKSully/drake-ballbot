@@ -21,7 +21,7 @@ namespace drake::ballbot {
  */
 struct BallbotConstraints {
   double u{15.0};
-  double theta{(100.0 * std::numbers::pi) / 2};
+  double theta{(100.0 * std::numbers::pi) / 180.0};
   double dphi{100.0};
 };
 
