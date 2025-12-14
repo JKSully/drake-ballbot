@@ -202,20 +202,6 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
                                                        u_constraint),
       dircol_->input());
 
-  // auto const theta_constraint =
-  //     VectorX<double>::Constant(1, constraints_.theta);
-  // theta_constraints_ = dircol_->AddConstraintToAllKnotPoints(
-  //     std::make_shared<solvers::BoundingBoxConstraint>(-theta_constraint,
-  //                                                      theta_constraint),
-  //     dircol_->state(planar::BallbotStateIndicies::kLeanAngle));
-
-  // auto const dphi_constraint = VectorX<double>::Constant(1,
-  // constraints_.dphi); theta_constraints_ =
-  // dircol_->AddConstraintToAllKnotPoints(
-  //     std::make_shared<solvers::BoundingBoxConstraint>(-dphi_constraint,
-  //                                                      dphi_constraint),
-  //     dircol_->state(planar::BallbotStateIndicies::kBallVelocity));
-
   auto const state_error = dircol_->state() - goal_state;
   auto const input_error = dircol_->input();
 
