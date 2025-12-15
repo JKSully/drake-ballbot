@@ -72,6 +72,10 @@ class BallbotNLMPC final : public systems::LeafSystem<T> {
       goal_state_constraint_;
   std::optional<std::vector<solvers::Binding<solvers::BoundingBoxConstraint>>>
       force_constraints_;
+  std::optional<std::vector<solvers::Binding<solvers::BoundingBoxConstraint>>>
+      theta_constraints_;
+  std::optional<std::vector<solvers::Binding<solvers::BoundingBoxConstraint>>>
+      dphi_constraints_;
 
   void DoCalcAction_(const systems::Context<T>& context,
                      planar::BallbotInput<T>* output) const;

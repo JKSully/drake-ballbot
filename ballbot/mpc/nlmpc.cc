@@ -190,11 +190,6 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
   initial_state_constraint_ = prog.AddBoundingBoxConstraint(
       initial_state, initial_state, dircol_->initial_state());
 
-  auto const goal_state =
-      VectorX<double>::Zero(model_->get_output_port().size());
-  goal_state_constraint_ = prog.AddBoundingBoxConstraint(
-      goal_state, goal_state, dircol_->final_state());
-
   auto const u_constraint = VectorX<double>::Constant(
       model_->get_input_port().size(), constraints_.u);
   force_constraints_ = dircol_->AddConstraintToAllKnotPoints(
@@ -202,7 +197,20 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
                                                        u_constraint),
       dircol_->input());
 
-  auto const state_error = dircol_->state() - goal_state;
+  auto const theta_constraint = VectorX<T>::Constant(1, constraints_.theta);
+  theta_constraints_ = dircol_->AddConstraintToAllKnotPoints(
+      std::make_shared<solvers::BoundingBoxConstraint>(-theta_constraint,
+                                                       theta_constraint),
+      dircol_->state().segment(planar::BallbotStateIndicies::kLeanAngle, 1));
+
+  auto const dphi_constraint = VectorX<T>::Constant(1, constraints_.dphi);
+  dphi_constraints_ = dircol_->AddConstraintToAllKnotPoints(
+      std::make_shared<solvers::BoundingBoxConstraint>(-dphi_constraint,
+                                                       dphi_constraint),
+      dircol_->state().segment(planar::BallbotStateIndicies::kWheelVelocity,
+                               1));
+
+  auto const state_error = dircol_->state();
   auto const input_error = dircol_->input();
 
   dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
