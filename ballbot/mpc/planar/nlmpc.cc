@@ -46,13 +46,11 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
   int const num_inputs = model_->get_input_port(0).size();
 
   state_input_port_index_ =
-      this->DeclareVectorInputPort("state", planar::BallbotState<T>())
-          .get_index();
+      this->DeclareVectorInputPort("state", BallbotState<T>()).get_index();
   goal_input_port_index_ =
-      this->DeclareVectorInputPort("goal", planar::BallbotState<T>())
-          .get_index();
+      this->DeclareVectorInputPort("goal", BallbotState<T>()).get_index();
   action_output_port_index_ =
-      this->DeclareVectorOutputPort("action", planar::BallbotInput<T>(),
+      this->DeclareVectorOutputPort("action", BallbotInput<T>(),
                                     &BallbotNLMPC<T>::DoCalcAction_)
           .get_index();
 
@@ -163,7 +161,7 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
 
 template <typename T>
 void BallbotNLMPC<T>::DoCalcAction_(const systems::Context<T>& context,
-                                    planar::BallbotInput<T>* output) const {
+                                    BallbotInput<T>* output) const {
   auto const sim_time = context.get_time();
   auto const time_offset =
       context.template get_abstract_state<double>(time_offset_index_);
@@ -201,14 +199,13 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
   theta_constraints_ = dircol_->AddConstraintToAllKnotPoints(
       std::make_shared<solvers::BoundingBoxConstraint>(-theta_constraint,
                                                        theta_constraint),
-      dircol_->state().segment(planar::BallbotStateIndicies::kLeanAngle, 1));
+      dircol_->state().segment(BallbotStateIndicies::kLeanAngle, 1));
 
   auto const dphi_constraint = VectorX<T>::Constant(1, constraints_.dphi);
   dphi_constraints_ = dircol_->AddConstraintToAllKnotPoints(
       std::make_shared<solvers::BoundingBoxConstraint>(-dphi_constraint,
                                                        dphi_constraint),
-      dircol_->state().segment(planar::BallbotStateIndicies::kWheelVelocity,
-                               1));
+      dircol_->state().segment(BallbotStateIndicies::kWheelVelocity, 1));
 
   auto const state_error = dircol_->state();
   auto const input_error = dircol_->input();

@@ -78,7 +78,7 @@ class BallbotNLMPC final : public systems::LeafSystem<T> {
       dphi_constraints_;
 
   void DoCalcAction_(const systems::Context<T>& context,
-                     planar::BallbotInput<T>* output) const;
+                     BallbotInput<T>* output) const;
 
   void UpdateAndSolve_(const systems::Context<T>& context,
                        systems::State<T>* state) const;
