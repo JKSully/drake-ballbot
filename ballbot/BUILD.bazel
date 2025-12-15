@@ -6,6 +6,6 @@ cc_binary(
     deps = [
         "@drake//:drake_shared_library",
         "//ballbot/plant/planar:ballbot_plant",
-        "//ballbot/mpc:ballbot_mpc",
+        "//ballbot/mpc/planar:ballbot_mpc",
     ]
 )

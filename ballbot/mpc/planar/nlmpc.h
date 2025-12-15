@@ -11,7 +11,7 @@
 #include "drake/solvers/solver_base.h"
 #include "drake/systems/framework/leaf_system.h"
 
-namespace drake::ballbot {
+namespace drake::ballbot::planar {
 
 /*
  * Constraints for the Ballbot NLMPC.
@@ -85,4 +85,4 @@ class BallbotNLMPC final : public systems::LeafSystem<T> {
 
   void SetupTrajectoryOptimization_();
 };
-}  // namespace drake::ballbot
+}  // namespace drake::ballbot::planar

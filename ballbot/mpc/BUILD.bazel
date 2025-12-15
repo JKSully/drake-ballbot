@@ -1,11 +1,1 @@
-cc_library(
-    name = "ballbot_mpc",
-    srcs = ["nlmpc.cc"],
-    hdrs = ["nlmpc.h"],
-    deps = [
-        "@drake//:drake_shared_library",
-        "//ballbot/plant/planar:ballbot_plant",
-        "@fmt"
-    ],
-    visibility = ["//visibility:public"],
-)
+# Empty file

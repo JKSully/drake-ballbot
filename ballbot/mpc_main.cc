@@ -6,7 +6,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-#include "ballbot/mpc/nlmpc.h"
+#include "ballbot/mpc/planar/nlmpc.h"
 #include "ballbot/plant/planar/plant.h"
 
 #include "drake/common/eigen_types.h"

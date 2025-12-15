@@ -1,4 +1,4 @@
-#include "ballbot/mpc/nlmpc.h"
+#include "ballbot/mpc/planar/nlmpc.h"
 
 #include <cmath>
 #include <memory>
@@ -20,7 +20,7 @@
 #include "drake/systems/framework/context.h"
 #include "drake/systems/framework/state.h"
 
-namespace drake::ballbot {
+namespace drake::ballbot::planar {
 
 using trajectories::PiecewisePolynomial;
 template <typename T>
@@ -220,4 +220,4 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
 // DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
 //     class BallbotNLMPC);
 template class BallbotNLMPC<double>;
-}  // namespace drake::ballbot
+}  // namespace drake::ballbot::planar
