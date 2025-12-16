@@ -75,8 +75,14 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
   time_offset_index_ = this->DeclareAbstractState(Value<double>(0.));
 
   solver_ = std::make_unique<solvers::IpoptSolver>();
+  auto const solver_id = solver_->solver_id();
+
+  solver_options_.SetOption(solver_id, "max_iter", 100);
+  solver_options_.SetOption(solver_id, "tol", 1e-4);
 
   SetupTrajectoryOptimization_();
+
+  dircol_->prog().SetSolverOptions(solver_options_);
 
   this->DeclarePeriodicUnrestrictedUpdateEvent(
       sample_time_, 0., &BallbotNLMPC<T>::UpdateAndSolve_);
@@ -208,11 +214,16 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
                                                        dphi_constraint),
       dircol_->state().segment(BallbotStateIndicies::kWheelVelocity, 1));
 
-  auto const state_error = dircol_->state();
+  auto const state_error =
+      dircol_->state() - goal_state_constraint_->variables();
   auto const input_error = dircol_->input();
 
   dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
                           input_error.transpose() * R_ * input_error);
+
+  auto const final_state_error =
+      dircol_->final_state() - goal_state_constraint_->variables();
+  dircol_->AddFinalCost(final_state_error.transpose() * Q_ * final_state_error);
 }
 
 // DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(

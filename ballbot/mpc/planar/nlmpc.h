@@ -9,6 +9,7 @@
 #include "drake/planning/trajectory_optimization/direct_collocation.h"
 #include "drake/solvers/constraint.h"
 #include "drake/solvers/solver_base.h"
+#include "drake/solvers/solver_options.h"
 #include "drake/systems/framework/leaf_system.h"
 
 namespace drake::ballbot::planar {
@@ -65,6 +66,7 @@ class BallbotNLMPC final : public systems::LeafSystem<T> {
 
   std::unique_ptr<planning::trajectory_optimization::DirectCollocation> dircol_;
   std::unique_ptr<solvers::SolverBase> solver_;
+  solvers::SolverOptions solver_options_{};
 
   std::optional<solvers::Binding<solvers::BoundingBoxConstraint>>
       initial_state_constraint_;
