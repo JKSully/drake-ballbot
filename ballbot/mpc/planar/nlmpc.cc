@@ -22,9 +22,8 @@
 
 namespace drake::ballbot::planar {
 
-using trajectories::PiecewisePolynomial;
 template <typename T>
-BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
+BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<System<double>> model,
                               MatrixX<double> const& Q,
                               MatrixX<double> const& R, int N, double T_f,
                               BallbotConstraints const& constraints)
@@ -89,8 +88,8 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<systems::System<double>> model,
 }
 
 template <typename T>
-void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
-                                      systems::State<T>* state) const {
+void BallbotNLMPC<T>::UpdateAndSolve_(const Context<T>& context,
+                                      State<T>* state) const {
   VectorX<T> const& initial_state =
       this->get_input_port(state_input_port_index_).Eval(context);
   VectorX<T> const& goal_state =
@@ -132,14 +131,12 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
     }
 
     auto state_guess =
-        trajectories::PiecewisePolynomial<double>::FirstOrderHold(
-            breaks, state_samples);
+        PiecewisePolynomial<double>::FirstOrderHold(breaks, state_samples);
 
     MatrixX<double> input_samples =
         MatrixX<double>::Zero(get_action_output_port().size(), N_);
     auto input_guess =
-        trajectories::PiecewisePolynomial<double>::FirstOrderHold(
-            breaks, input_samples);
+        PiecewisePolynomial<double>::FirstOrderHold(breaks, input_samples);
 
     dircol_->SetInitialTrajectory(input_guess, state_guess);
   }
@@ -166,7 +163,7 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const systems::Context<T>& context,
 }
 
 template <typename T>
-void BallbotNLMPC<T>::DoCalcAction_(const systems::Context<T>& context,
+void BallbotNLMPC<T>::DoCalcAction_(const Context<T>& context,
                                     BallbotInput<T>* output) const {
   auto const sim_time = context.get_time();
   auto const time_offset =
@@ -182,9 +179,8 @@ void BallbotNLMPC<T>::DoCalcAction_(const systems::Context<T>& context,
 
 template <typename T>
 void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
-  dircol_ =
-      std::make_unique<planning::trajectory_optimization::DirectCollocation>(
-          model_.get(), *model_context_, N_, sample_time_, sample_time_);
+  dircol_ = std::make_unique<DirectCollocation>(model_.get(), *model_context_,
+                                                N_, sample_time_, sample_time_);
   auto& prog = dircol_->prog();
 
   dircol_->AddEqualTimeIntervalsConstraints();
@@ -203,21 +199,20 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
   auto const u_constraint = VectorX<double>::Constant(
       model_->get_input_port().size(), constraints_.u);
   force_constraints_ = dircol_->AddConstraintToAllKnotPoints(
-      std::make_shared<solvers::BoundingBoxConstraint>(-u_constraint,
-                                                       u_constraint),
+      std::make_shared<BoundingBoxConstraint>(-u_constraint, u_constraint),
       dircol_->input());
 
   auto const theta_constraint =
       VectorX<double>::Constant(1, constraints_.theta);
   theta_constraints_ = dircol_->AddConstraintToAllKnotPoints(
-      std::make_shared<solvers::BoundingBoxConstraint>(-theta_constraint,
-                                                       theta_constraint),
+      std::make_shared<BoundingBoxConstraint>(-theta_constraint,
+                                              theta_constraint),
       dircol_->state().segment(BallbotStateIndicies::kLeanAngle, 1));
 
   auto const dphi_constraint = VectorX<double>::Constant(1, constraints_.dphi);
   dphi_constraints_ = dircol_->AddConstraintToAllKnotPoints(
-      std::make_shared<solvers::BoundingBoxConstraint>(-dphi_constraint,
-                                                       dphi_constraint),
+      std::make_shared<BoundingBoxConstraint>(-dphi_constraint,
+                                              dphi_constraint),
       dircol_->state().segment(BallbotStateIndicies::kWheelVelocity, 1));
 
   auto const state_error = dircol_->state() - goal_vars_;
@@ -230,7 +225,5 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
   dircol_->AddFinalCost(final_state_error.transpose() * Q_ * final_state_error);
 }
 
-// DRAKE_DEFINE_CLASS_TEMPLATE_INSTANTIATIONS_ON_DEFAULT_SCALARS(
-//     class BallbotNLMPC);
 template class BallbotNLMPC<double>;
 }  // namespace drake::ballbot::planar
