@@ -189,11 +189,16 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
 
   dircol_->AddEqualTimeIntervalsConstraints();
 
-  auto const dummy_state = VectorX<T>::Zero(model_->get_output_port().size());
+  auto const dummy_state =
+      VectorX<double>::Zero(model_->get_output_port().size());
   initial_state_constraint_ = prog.AddBoundingBoxConstraint(
       dummy_state, dummy_state, dircol_->initial_state());
-  goal_state_constraint_ = prog.AddBoundingBoxConstraint(
-      dummy_state, dummy_state, dircol_->final_state());
+
+  goal_vars_ =
+      prog.NewContinuousVariables(model_->get_output_port().size(), "goal");
+
+  goal_state_constraint_ =
+      prog.AddBoundingBoxConstraint(dummy_state, dummy_state, goal_vars_);
 
   auto const u_constraint = VectorX<double>::Constant(
       model_->get_input_port().size(), constraints_.u);
@@ -202,27 +207,26 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
                                                        u_constraint),
       dircol_->input());
 
-  auto const theta_constraint = VectorX<T>::Constant(1, constraints_.theta);
+  auto const theta_constraint =
+      VectorX<double>::Constant(1, constraints_.theta);
   theta_constraints_ = dircol_->AddConstraintToAllKnotPoints(
       std::make_shared<solvers::BoundingBoxConstraint>(-theta_constraint,
                                                        theta_constraint),
       dircol_->state().segment(BallbotStateIndicies::kLeanAngle, 1));
 
-  auto const dphi_constraint = VectorX<T>::Constant(1, constraints_.dphi);
+  auto const dphi_constraint = VectorX<double>::Constant(1, constraints_.dphi);
   dphi_constraints_ = dircol_->AddConstraintToAllKnotPoints(
       std::make_shared<solvers::BoundingBoxConstraint>(-dphi_constraint,
                                                        dphi_constraint),
       dircol_->state().segment(BallbotStateIndicies::kWheelVelocity, 1));
 
-  auto const state_error =
-      dircol_->state() - goal_state_constraint_->variables();
+  auto const state_error = dircol_->state() - goal_vars_;
   auto const input_error = dircol_->input();
 
   dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
                           input_error.transpose() * R_ * input_error);
 
-  auto const final_state_error =
-      dircol_->final_state() - goal_state_constraint_->variables();
+  auto const final_state_error = dircol_->final_state() - goal_vars_;
   dircol_->AddFinalCost(final_state_error.transpose() * Q_ * final_state_error);
 }
 

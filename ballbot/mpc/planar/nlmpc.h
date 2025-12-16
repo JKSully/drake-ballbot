@@ -64,6 +64,8 @@ class BallbotNLMPC final : public systems::LeafSystem<T> {
   systems::AbstractStateIndex input_trajectory_index_{0};
   systems::AbstractStateIndex time_offset_index_{0};
 
+  solvers::VectorXDecisionVariable goal_vars_;
+
   std::unique_ptr<planning::trajectory_optimization::DirectCollocation> dircol_;
   std::unique_ptr<solvers::SolverBase> solver_;
   solvers::SolverOptions solver_options_{};
