@@ -183,10 +183,11 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
 
   dircol_->AddEqualTimeIntervalsConstraints();
 
-  auto const initial_state =
-      VectorX<double>::Zero(model_->get_output_port().size());
+  auto const dummy_state = VectorX<T>::Zero(model_->get_output_port().size());
   initial_state_constraint_ = prog.AddBoundingBoxConstraint(
-      initial_state, initial_state, dircol_->initial_state());
+      dummy_state, dummy_state, dircol_->initial_state());
+  goal_state_constraint_ = prog.AddBoundingBoxConstraint(
+      dummy_state, dummy_state, dircol_->final_state());
 
   auto const u_constraint = VectorX<double>::Constant(
       model_->get_input_port().size(), constraints_.u);
