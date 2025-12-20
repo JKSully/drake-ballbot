@@ -37,8 +37,18 @@ int do_main() {
   MatrixX<double> R = MatrixX<double>::Identity(1, 1);
   R(0, 0) = 1.0;
 
+  auto system = std::make_unique<BallbotPlant<double>>();
+  auto system_context = system->CreateDefaultContext();
+  VectorX<double> x0 =
+      VectorX<double>::Zero(system->get_state_output_port().size());
+  VectorX<double> u0 =
+      VectorX<double>::Zero(system->get_action_input_port().size());
+
+  system->get_action_input_port().FixValue(system_context.get(), u0);
+  system_context->get_mutable_continuous_state_vector().SetFromVector(x0);
+
   auto* controller = builder.AddSystem<BallbotNLMPC>(
-      std::make_shared<BallbotPlant<double>>(), Q, R, N, T_F);
+      std::move(system), std::move(system_context), Q, R, N, T_F);
   std::unique_ptr<systems::Context<double>> controller_context =
       controller->CreateDefaultContext();
 

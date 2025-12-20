@@ -13,28 +13,25 @@
 #include "drake/common/eigen_types.h"
 #include "drake/common/trajectories/piecewise_polynomial.h"
 #include "drake/common/value.h"
-#include "drake/planning/trajectory_optimization/direct_collocation.h"
-#include "drake/solvers/constraint.h"
-#include "drake/solvers/ipopt_solver.h"
 #include "drake/solvers/mathematical_program_result.h"
-#include "drake/systems/framework/context.h"
-#include "drake/systems/framework/state.h"
+#include "drake/solvers/osqp_solver.h"
 
 namespace drake::ballbot::planar {
 
 template <typename T>
-BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<System<double>> model,
+BallbotNLMPC<T>::BallbotNLMPC(std::unique_ptr<System<double>> model,
+                              std::unique_ptr<Context<double>> base_context,
                               MatrixX<double> const& Q,
                               MatrixX<double> const& R, int N, double T_f,
                               BallbotConstraints const& constraints)
     : model_(std::move(model)),
+      base_context_(std::move(base_context)),
       Q_(Q),
       R_(R),
       N_(N),
       T_f_(T_f),
       sample_time_(T_f / (N - 1)),
-      constraints_(constraints),
-      model_context_(model_->CreateDefaultContext()) {
+      constraints_(constraints) {
   DRAKE_DEMAND(model_ != nullptr);
   // Require at least two collocation points (N must be >= 2) so that the
   // denominator (N - 1) used to compute `sample_time_` is non-zero.
@@ -73,15 +70,15 @@ BallbotNLMPC<T>::BallbotNLMPC(std::shared_ptr<System<double>> model,
           PiecewisePolynomial<double>::FirstOrderHold(breaks, input_samples)));
   time_offset_index_ = this->DeclareAbstractState(Value<double>(0.));
 
-  solver_ = std::make_unique<solvers::IpoptSolver>();
+  solver_ = std::make_unique<solvers::OsqpSolver>();
   auto const solver_id = solver_->solver_id();
 
-  solver_options_.SetOption(solver_id, "max_iter", 100);
-  solver_options_.SetOption(solver_id, "tol", 1e-4);
+  // solver_options_.SetOption(solver_id, "max_iter", 100);
+  // solver_options_.SetOption(solver_id, "tol", 1e-4);
 
   SetupTrajectoryOptimization_();
 
-  dircol_->prog().SetSolverOptions(solver_options_);
+  // dirtran_->prog().SetSolverOptions(solver_options_);
 
   this->DeclarePeriodicUnrestrictedUpdateEvent(
       sample_time_, 0., &BallbotNLMPC<T>::UpdateAndSolve_);
@@ -115,8 +112,8 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const Context<T>& context,
         context.template get_abstract_state<PiecewisePolynomial<double>>(
             input_trajectory_index_);
 
-    dircol_->SetInitialTrajectory(initial_input_trajectory,
-                                  initial_state_trajectory);
+    dirtran_->SetInitialTrajectory(initial_input_trajectory,
+                                   initial_state_trajectory);
   } else {
     VectorX<double> breaks(N_);
     for (int i = 0; i < N_; ++i) {
@@ -138,21 +135,21 @@ void BallbotNLMPC<T>::UpdateAndSolve_(const Context<T>& context,
     auto input_guess =
         PiecewisePolynomial<double>::FirstOrderHold(breaks, input_samples);
 
-    dircol_->SetInitialTrajectory(input_guess, state_guess);
+    dirtran_->SetInitialTrajectory(input_guess, state_guess);
   }
 
   solvers::MathematicalProgramResult const result =
-      solver_->Solve(dircol_->prog());
+      solver_->Solve(dirtran_->prog());
 
   if (!result.is_success()) {
-    auto infeasible = result.GetInfeasibleConstraints(dircol_->prog());
+    auto infeasible = result.GetInfeasibleConstraints(dirtran_->prog());
     for (auto const& constraint : infeasible) {
       fmt::println("Infeasible constraint: {}", constraint);
     }
   }
 
-  auto const input_trajectory = dircol_->ReconstructInputTrajectory(result);
-  auto const state_trajectory = dircol_->ReconstructStateTrajectory(result);
+  auto const input_trajectory = dirtran_->ReconstructInputTrajectory(result);
+  auto const state_trajectory = dirtran_->ReconstructStateTrajectory(result);
 
   state->template get_mutable_abstract_state<PiecewisePolynomial<double>>(
       input_trajectory_index_) = input_trajectory;
@@ -179,16 +176,19 @@ void BallbotNLMPC<T>::DoCalcAction_(const Context<T>& context,
 
 template <typename T>
 void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
-  dircol_ = std::make_unique<DirectCollocation>(model_.get(), *model_context_,
-                                                N_, sample_time_, sample_time_);
-  auto& prog = dircol_->prog();
+  if (base_context_ != nullptr) {
+    linear_model_ = systems::Linearize(*model_, *base_context_);
+  }
+  dirtran_ = std::make_unique<DirectTranscription>(linear_model_.get(),
+                                                   *base_context_, N_);
+  auto& prog = dirtran_->prog();
 
-  dircol_->AddEqualTimeIntervalsConstraints();
+  dirtran_->AddEqualTimeIntervalsConstraints();
 
   auto const dummy_state =
       VectorX<double>::Zero(model_->get_output_port().size());
   initial_state_constraint_ = prog.AddBoundingBoxConstraint(
-      dummy_state, dummy_state, dircol_->initial_state());
+      dummy_state, dummy_state, dirtran_->initial_state());
 
   goal_vars_ =
       prog.NewContinuousVariables(model_->get_output_port().size(), "goal");
@@ -198,31 +198,32 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
 
   auto const u_constraint = VectorX<double>::Constant(
       model_->get_input_port().size(), constraints_.u);
-  force_constraints_ = dircol_->AddConstraintToAllKnotPoints(
+  force_constraints_ = dirtran_->AddConstraintToAllKnotPoints(
       std::make_shared<BoundingBoxConstraint>(-u_constraint, u_constraint),
-      dircol_->input());
+      dirtran_->input());
 
   auto const theta_constraint =
       VectorX<double>::Constant(1, constraints_.theta);
-  theta_constraints_ = dircol_->AddConstraintToAllKnotPoints(
+  theta_constraints_ = dirtran_->AddConstraintToAllKnotPoints(
       std::make_shared<BoundingBoxConstraint>(-theta_constraint,
                                               theta_constraint),
-      dircol_->state().segment(BallbotStateIndicies::kLeanAngle, 1));
+      dirtran_->state().segment(BallbotStateIndicies::kLeanAngle, 1));
 
   auto const dphi_constraint = VectorX<double>::Constant(1, constraints_.dphi);
-  dphi_constraints_ = dircol_->AddConstraintToAllKnotPoints(
+  dphi_constraints_ = dirtran_->AddConstraintToAllKnotPoints(
       std::make_shared<BoundingBoxConstraint>(-dphi_constraint,
                                               dphi_constraint),
-      dircol_->state().segment(BallbotStateIndicies::kWheelVelocity, 1));
+      dirtran_->state().segment(BallbotStateIndicies::kWheelVelocity, 1));
 
-  auto const state_error = dircol_->state() - goal_vars_;
-  auto const input_error = dircol_->input();
+  auto const state_error = dirtran_->state() - goal_vars_;
+  auto const input_error = dirtran_->input();
 
-  dircol_->AddRunningCost(state_error.transpose() * Q_ * state_error +
-                          input_error.transpose() * R_ * input_error);
+  dirtran_->AddRunningCost(state_error.transpose() * Q_ * state_error +
+                           input_error.transpose() * R_ * input_error);
 
-  auto const final_state_error = dircol_->final_state() - goal_vars_;
-  dircol_->AddFinalCost(final_state_error.transpose() * Q_ * final_state_error);
+  auto const final_state_error = dirtran_->final_state() - goal_vars_;
+  dirtran_->AddFinalCost(final_state_error.transpose() * Q_ *
+                         final_state_error);
 }
 
 template class BallbotNLMPC<double>;

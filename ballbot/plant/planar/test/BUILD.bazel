@@ -16,3 +16,12 @@ cc_test(
     ],
     srcs = ["ballbot_plant_test.cc"],
 )
+
+cc_test(
+  name = "linearize_test",
+  deps = [
+    "//ballbot/plant/planar:ballbot_plant",
+    "@googletest//:gtest_main",
+  ],
+  srcs = ["linearize_test.cc"],
+)

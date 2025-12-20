@@ -8,19 +8,23 @@
 #include "ballbot/plant/planar/state.h"
 
 #include "drake/planning/trajectory_optimization/direct_collocation.h"
+#include "drake/planning/trajectory_optimization/direct_transcription.h"
 #include "drake/solvers/constraint.h"
 #include "drake/solvers/solver_base.h"
 #include "drake/solvers/solver_options.h"
 #include "drake/systems/framework/leaf_system.h"
+#include "drake/systems/primitives/linear_system.h"
 
 namespace drake::ballbot::planar {
 
-using planning::trajectory_optimization::DirectCollocation;
+using planning::trajectory_optimization::DirectCollocation,
+    planning::trajectory_optimization::DirectTranscription;
 using solvers::VectorXDecisionVariable, solvers::SolverOptions,
     solvers::SolverBase, solvers::Binding, solvers::BoundingBoxConstraint;
 using systems::InputPort, systems::InputPortIndex, systems::OutputPort,
     systems::OutputPortIndex, systems::System, systems::AbstractStateIndex,
-    systems::Context, systems::State, systems::LeafSystem;
+    systems::Context, systems::State, systems::LeafSystem,
+    systems::LinearSystem;
 using trajectories::PiecewisePolynomial;
 
 /*
@@ -47,8 +51,10 @@ struct BallbotConstraints {
 template <typename T>
 class BallbotNLMPC final : public LeafSystem<T> {
  public:
-  BallbotNLMPC(std::shared_ptr<System<double>> model, MatrixX<double> const& Q,
-               MatrixX<double> const& R, int N, double T_f,
+  BallbotNLMPC(std::unique_ptr<System<double>> model,
+               std::unique_ptr<Context<double>> base_context,
+               MatrixX<double> const& Q, MatrixX<double> const& R, int N,
+               double T_f,
                BallbotConstraints const& constraints = BallbotConstraints{});
 
   const InputPort<T>& get_state_input_port() const {
@@ -65,6 +71,7 @@ class BallbotNLMPC final : public LeafSystem<T> {
 
  private:
   std::shared_ptr<System<double>> model_;
+  std::unique_ptr<Context<double>> base_context_;
   MatrixX<double> Q_;
   MatrixX<double> R_;
   int N_;
@@ -72,7 +79,7 @@ class BallbotNLMPC final : public LeafSystem<T> {
   double sample_time_;
   BallbotConstraints constraints_;
 
-  std::unique_ptr<Context<double>> model_context_;
+  std::unique_ptr<LinearSystem<double>> linear_model_;
 
   InputPortIndex state_input_port_index_{0};
   InputPortIndex goal_input_port_index_{0};
@@ -83,7 +90,7 @@ class BallbotNLMPC final : public LeafSystem<T> {
 
   VectorXDecisionVariable goal_vars_{};
 
-  std::unique_ptr<DirectCollocation> dircol_;
+  std::unique_ptr<DirectTranscription> dirtran_;
   std::unique_ptr<SolverBase> solver_;
   SolverOptions solver_options_{};
 
