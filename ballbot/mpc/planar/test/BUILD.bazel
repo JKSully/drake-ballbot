@@ -1,0 +1,10 @@
+cc_test(
+    name = "BallbotNLMPCTest",
+    srcs = ["mpc_test.cc"],
+    deps = [
+        "//ballbot/mpc/planar:ballbot_mpc",
+        "//ballbot/plant/planar:ballbot_plant",
+        "@googletest//:gtest_main",
+    ],
+    size = "large"
+)

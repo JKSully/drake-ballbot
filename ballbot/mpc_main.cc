@@ -49,7 +49,7 @@ int do_main() {
 
   auto* controller = builder.AddSystem<BallbotNLMPC>(
       std::move(system), std::move(system_context), Q, R, N, T_F);
-  std::unique_ptr<systems::Context<double>> controller_context =
+  std::unique_ptr<Context<double>> controller_context =
       controller->CreateDefaultContext();
 
   builder.Connect(controller->get_action_output_port(),

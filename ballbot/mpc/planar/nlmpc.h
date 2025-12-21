@@ -17,7 +17,7 @@
 
 namespace drake::ballbot::planar {
 
-using planning::trajectory_optimization::DirectCollocation,
+using planning::trajectory_optimization::TimeStep,
     planning::trajectory_optimization::DirectTranscription;
 using solvers::VectorXDecisionVariable, solvers::SolverOptions,
     solvers::SolverBase, solvers::Binding, solvers::BoundingBoxConstraint;
@@ -70,7 +70,7 @@ class BallbotNLMPC final : public LeafSystem<T> {
   }
 
  private:
-  std::shared_ptr<System<double>> model_;
+  std::unique_ptr<System<double>> model_;
   std::unique_ptr<Context<double>> base_context_;
   MatrixX<double> Q_;
   MatrixX<double> R_;

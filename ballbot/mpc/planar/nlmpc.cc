@@ -179,11 +179,11 @@ void BallbotNLMPC<T>::SetupTrajectoryOptimization_() {
   if (base_context_ != nullptr) {
     linear_model_ = systems::Linearize(*model_, *base_context_);
   }
-  dirtran_ = std::make_unique<DirectTranscription>(linear_model_.get(),
-                                                   *base_context_, N_);
+  dirtran_ = std::make_unique<DirectTranscription>(
+      linear_model_.get(), *base_context_, N_, TimeStep(sample_time_));
   auto& prog = dirtran_->prog();
 
-  dirtran_->AddEqualTimeIntervalsConstraints();
+  // dirtran_->AddEqualTimeIntervalsConstraints();
 
   auto const dummy_state =
       VectorX<double>::Zero(model_->get_output_port().size());
